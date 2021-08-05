@@ -3,7 +3,7 @@
 
 (reg-sub
  ::auth
- :<- [:current-mine]
+ :<- [:local-mine]
  (fn [current-mine]
    (:auth current-mine)))
 

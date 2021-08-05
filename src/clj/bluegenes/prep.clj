@@ -4,6 +4,7 @@
   Do not require this namespace and use it from the rest of the project!"
   (:require [clojure.java.io :as io]
             [taoensso.timbre :refer [error]]
+            [bluegenes.index :refer [index]] 
             [bluegenes.utils :as utils]))
 
 (def bluegenes-css "public/css/site.css")
@@ -24,8 +25,12 @@
       (catch IllegalArgumentException _
         (error "Failed to read CSS from im-tables dependency. You are likely trying to use an older im-tables version which requires manual copying of its CSS into BlueGenes. If you don't do this now, im-tables will look weird!")))))
 
+(defn make-index []
+  (spit (resource-path "public/static.html") (index)))
+
 (defn prepare-assets []
-  (copy-im-tables-css))
+  (copy-im-tables-css)
+  (make-index))
 
 ;; Below is called directly as they depend on files that come later in the
 ;; build process.

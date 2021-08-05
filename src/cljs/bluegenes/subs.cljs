@@ -164,6 +164,11 @@
    (get-in db [:mines (get db :current-mine)])))
 
 (reg-sub
+ :local-mine
+ (fn [db]
+   (get-in db [:mines (get db :local-mine)])))
+
+(reg-sub
  :current-mine/news
  :<- [:current-mine]
  (fn [current-mine]

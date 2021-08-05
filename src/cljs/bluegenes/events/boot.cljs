@@ -154,7 +154,7 @@
          ;; router won't have dispatched `:set-current-mine` before later on.
          current-mine (-> (.. js/window -location -pathname)
                           (str/split #"/")
-                          (second)
+                          (nth 4)
                           (keyword)
                           (or default-ns))
          ;; These could be passed from the Bluegenes backend and result in
@@ -171,6 +171,7 @@
                      (assoc-in [:env :mines] config-mines)
                      (assoc-in [:mines current-mine] mine)
                      (assoc :current-mine current-mine)
+                     (assoc :local-mine (:local-mine @server-vars))
                      (cond->
                        init-events (assoc :dispatch-after-boot init-events)))
          ;; Load data previously persisted to local storage.

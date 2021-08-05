@@ -336,7 +336,7 @@
 (reg-fx
  :change-route
  (fn [new-path]
-   (.replaceState js/window.history nil "" (str "/" new-path))))
+   (.replaceState js/window.history nil "" (str "/dbin/cnsb/CETSA/" new-path))))
 
 ;; filename - string including extension
 ;; filetype - string to be appended to 'text/' forming a mime type

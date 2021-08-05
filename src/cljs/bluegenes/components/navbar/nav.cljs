@@ -108,11 +108,11 @@
 (defn login-form [{:keys [credentials on-reset-password on-register]}]
   (let [{:keys [error? thinking? message]} @(subscribe [:bluegenes.subs.auth/auth])
         oauth2-providers @(subscribe [:current-mine/oauth2-providers])
-        current-mine @(subscribe [:current-mine])
+        current-mine @(subscribe [:local-mine])
         {:keys [username password]} @credentials
         submit-fn #(dispatch [:bluegenes.events.auth/login username password])]
     [:form.login-form
-     [:h2 (str "Login to " (:name current-mine))]
+     [:h2 (str "Login to CETSAMINE")]
      [:div.form-group
       [:label "Email"]
       [:input.form-control

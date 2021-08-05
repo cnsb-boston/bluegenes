@@ -12,12 +12,15 @@
 ;; Hello dear maker of the internet. You want to edit *this* file for prod,
 ;; NOT resources/public/index.html.
 
-(def bundle-path (-> (utils/read-fingerprints) (utils/get-bundle-path)))
+(defn deploy-url [s]
+  (str (:deploy-url env) s))
+
+(def bundle-path (-> (utils/read-fingerprints) (utils/get-bundle-path) (deploy-url)))
 (def bundle-hash (utils/parse-bundle-hash bundle-path))
 
-(def bluegenes-css (cond-> "/css/site.css"
+(def bluegenes-css (cond-> (deploy-url "/css/site.css")
                      (not= bundle-hash "dev") (utils/insert-filename-css bundle-hash)))
-(def im-tables-css (cond-> "/css/im-tables.css"
+(def im-tables-css (cond-> (deploy-url "/css/im-tables.css")
                      (not= bundle-hash "dev") (utils/insert-filename-css bundle-hash)))
 
 (defn escape-quotes [s]
@@ -99,7 +102,8 @@
      (str "var serverVars="
           (let [server-vars (merge (select-keys env [:google-analytics
                                                      :bluegenes-default-service-root :bluegenes-default-mine-name :bluegenes-default-namespace
-                                                     :bluegenes-additional-mines :hide-registry-mines])
+                                                     :bluegenes-additional-mines :hide-registry-mines
+                                                     :auth-api :deploy-url :local-mine])
                                    {:version bundle-hash})]
             (str \" (escape-quotes (pr-str server-vars)) \"))
           ";")
@@ -110,7 +114,7 @@
           ";")]
   ; Javascript:
     ;; This favicon is dynamically served; see routes.clj.
-    [:link {:href "/favicon.ico" :type "image/x-icon" :rel "shortcut icon"}]
+    [:link {:href (deploy-url "/favicon.ico") :type "image/x-icon" :rel "shortcut icon"}]
     [:script {:src "https://cdn.intermine.org/js/intermine/imjs/latest/im.min.js"}]
     [:script {:crossorigin "anonymous"
               :integrity "sha256-cCueBR6CsyA4/9szpPfrX3s49M9vUU5BgtiJj06wt/s="

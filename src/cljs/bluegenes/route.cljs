@@ -7,7 +7,7 @@
             [reitit.frontend :as rf]
             [reitit.frontend.controllers :as rfc]
             [reitit.frontend.easy :as rfe]
-            [bluegenes.config :refer [read-default-ns]]
+            [bluegenes.config :refer [read-default-ns server-vars]]
             [clojure.string :as str]))
 
 ;; # Quickstart guide:
@@ -121,7 +121,7 @@
 ;; for all our routes. Doing this would fix the discrepancy we currently have
 ;; between `:set-active-panel` and the router events.
 (def routes
-  ["/"
+  [(str (:deploy-url @server-vars) "/")
    [":mine"
     {:controllers
      [{:parameters {:path [:mine]}
