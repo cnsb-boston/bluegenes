@@ -7,6 +7,7 @@
 /resources/public/vendor
 /resources/public/css
 /resources/public/tools/*
+/resources/public/index.html
 /cypress/screenshots
 /cypress/videos
 /cypress/results

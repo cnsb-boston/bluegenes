@@ -26,7 +26,7 @@
         (error "Failed to read CSS from im-tables dependency. You are likely trying to use an older im-tables version which requires manual copying of its CSS into BlueGenes. If you don't do this now, im-tables will look weird!")))))
 
 (defn make-index []
-  (spit (resource-path "public/static.html") (index)))
+  (spit (resource-path "public/index.html") (index)))
 
 (defn prepare-assets []
   (copy-im-tables-css)
