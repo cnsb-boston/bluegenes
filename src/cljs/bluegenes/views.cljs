@@ -11,6 +11,7 @@
             [bluegenes.pages.templates.views :as templates]
             [bluegenes.pages.querybuilder.views :as qb]
             [bluegenes.pages.lists.views :as lists]
+            [bluegenes.pages.projects.views :as projects]
             [bluegenes.components.ui.alerts :as alerts]
             [bluegenes.pages.upload.views :as upload]
             [bluegenes.pages.upgrade.views :as upgrade]
@@ -40,6 +41,7 @@
      :results-panel        results/main
      :regions-panel        regions/main
      :lists-panel          lists/main
+     :projects-panel       projects/main
      :querybuilder-panel   qb/main
      :reset-password-panel resetpassword/main)])
 

@@ -212,6 +212,11 @@
       [{:start #(dispatch [:set-active-panel :querybuilder-panel
                            nil
                            [:bluegenes.pages.querybuilder.events/load-querybuilder]])}]}]
+    ["/cetsaresults/:id"
+     {:name ::cetsaresults
+      :controllers
+      [{:parameters {:path [:id]}
+        :start (fn [{{:keys [id]} :path}])}]}]
     ["/results/:title"
      {:name ::results
       :controllers
@@ -242,6 +247,13 @@
                  (dispatch [:set-active-panel :lists-panel
                             nil
                             [:lists/initialize]]))}]}]
+    ["/projects"
+     {:name ::projects
+      :controllers
+      [{:start (fn []
+                 (dispatch [:set-active-panel :projects-panel
+                            nil
+                            [:projects/initialize]]))}]}]
     ["/report/:type/:id"
      {:name ::report
       :controllers

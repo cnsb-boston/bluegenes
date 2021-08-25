@@ -1,7 +1,7 @@
 (ns bluegenes.subs
   (:require [re-frame.core :refer [reg-sub subscribe]]
             [bluegenes.pages.results.enrichment.subs]
-            [clojure.string :refer [ends-with?]]
+            [clojure.string :refer [ends-with? upper-case]]
             [bluegenes.pages.querybuilder.subs]
             [bluegenes.components.search.subs]
             [bluegenes.subs.auth]
@@ -10,6 +10,7 @@
             [bluegenes.components.viz.subs]
             [bluegenes.pages.home.subs]
             [bluegenes.pages.lists.subs]
+            [bluegenes.pages.projects.subs]
             [bluegenes.pages.tools.subs]
             [bluegenes.pages.developer.subs]
             [bluegenes.pages.results.widgets.subs]
@@ -218,6 +219,11 @@
  :<- [:current-mine]
  (fn [current-mine]
    (:name current-mine)))
+
+(reg-sub
+ :local-mine-human-name
+ (fn [db]
+   (upper-case (name (:local-mine db)))))
 
 (reg-sub
  :active-token

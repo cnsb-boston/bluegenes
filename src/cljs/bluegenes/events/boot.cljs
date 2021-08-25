@@ -197,11 +197,7 @@
         {:db (-> db
                  (assoc :current-mine default-ns)
                  (assoc-in [:mines default-ns] (get config-mines default-ns)))
-         :dispatch-n [[:authentication/init]
-                      [:messages/add
-                       {:markup [:span "Your mine has been changed to the default as your selected mine " [:em (name current-mine)] " has not been configured."]
-                        :style "warning"
-                        :timeout 0}]]
+         :dispatch-n [[:authentication/init]]
          :change-route (name default-ns)}
         no-registry? ; Valid mine.
         {:dispatch [:authentication/init]}

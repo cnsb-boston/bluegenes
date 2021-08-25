@@ -66,10 +66,6 @@
        {:db (-> db-with-registry
                 (assoc :current-mine default-ns)
                 (assoc-in [:mines default-ns] (get-in db [:env :mines default-ns])))
-        :dispatch [:messages/add
-                   {:markup [:span "Your mine has been changed to the default as your selected mine " [:em (name current-mine)] " was not present in the registry."]
-                    :style "warning"
-                    :timeout 0}]
         :change-route (name default-ns)}
        ;; Fill in the mine details if it's missing.
        ;; (This happens when we load a registry mine at boot.)

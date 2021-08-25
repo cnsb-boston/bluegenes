@@ -245,13 +245,9 @@
     [:a {:href (route/href ::route/home)}
      "Home"]]
    [:li.primary-nav
-    {:class (classes :upload-panel large-screen?)}
-    [:a {:href (route/href ::route/upload-step {:step "input"})}
-     "Upload"]]
-   [:li.primary-nav
-    {:class (classes :lists-panel large-screen?)}
-    [:a {:href (route/href ::route/lists)}
-     "Lists"]]
+    {:class (classes :projects-panel large-screen?)}
+    [:a {:href (route/href ::route/projects)}
+     "Projects"]]
    [:li.primary-nav
     {:class (classes :templates-panel large-screen?)}
     [:a {:href (route/href ::route/templates)}

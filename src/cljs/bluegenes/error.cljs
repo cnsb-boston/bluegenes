@@ -1,6 +1,7 @@
 (ns bluegenes.error
   (:require [re-frame.core :refer [subscribe dispatch-sync]]
             [reagent.core :as reagent]
+            [bluegenes.config :refer [server-vars]]
             [oops.core :refer [oget]]
             [goog.json :as json]
             [goog.string :as gstring]
@@ -80,7 +81,7 @@ ERROR: " error)))))
       :render (fn [this]
                 (let [clear-error! (fn []
                                      ;; Change URL to root without triggering router.
-                                     (.pushState js/window.history nil "" "/")
+                                     (.pushState js/window.history nil "" (str (:deploy-url @server-vars) "/index.html"))
                                      ;; Boot and clear error.
                                      (dispatch-sync [:boot])
                                      (reset! !error nil)

@@ -39,7 +39,7 @@
   (compojure/let-routes [mines (env->mines env)
                          favicon* (delay (get-favicon))]
     ;;serve compiled files, i.e. js, css, from the resources folder
-    (resources "/")
+    (resources "/dbin/cnsb/CETSA/")
 
     ;; The favicon is chosen from the following order of priority:
     ;; 1. `public/favicon.ico` being present as a resource (admin will have to add this).

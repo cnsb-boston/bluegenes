@@ -33,6 +33,17 @@
                              :order :desc}}
            :selected-lists #{}
            :expanded-paths #{}}
+   :projects {:pagination {:per-page 20
+                           :current-page 1}
+              :controls {:filters {:keywords ""
+                                   :experiments nil
+                                   :run_date nil
+                                   :experiment_type nil
+                                   :project_name nil}
+                         :sort {:column :timestamp
+                                :order :desc}}
+              :selected-lists #{}}
+
 
    :qb {:constraint-logic nil
         :order []
