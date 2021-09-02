@@ -25,6 +25,7 @@
             [bluegenes.pages.home.events]
             [bluegenes.pages.lists.events]
             [bluegenes.pages.projects.events]
+            [bluegenes.pages.cetsaresults.events]
             [bluegenes.pages.developer.events]
             [bluegenes.pages.tools.events]
             [bluegenes.components.viz.events]

@@ -11,6 +11,7 @@
             [bluegenes.pages.home.subs]
             [bluegenes.pages.lists.subs]
             [bluegenes.pages.projects.subs]
+            [bluegenes.pages.cetsaresults.subs]
             [bluegenes.pages.tools.subs]
             [bluegenes.pages.developer.subs]
             [bluegenes.pages.results.widgets.subs]

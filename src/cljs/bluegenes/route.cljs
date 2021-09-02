@@ -216,7 +216,11 @@
      {:name ::cetsaresults
       :controllers
       [{:parameters {:path [:id]}
-        :start (fn [{{:keys [id]} :path}])}]}]
+        :start (fn [{{:keys [id]} :path}]
+                 (dispatch [:set-active-panel :cetsaresults-panel
+                            nil
+                            [:cetsaresults/get-results id]])
+                 )}]}]
     ["/results/:title"
      {:name ::results
       :controllers

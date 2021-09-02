@@ -16,6 +16,7 @@
             [bluegenes.pages.upload.views :as upload]
             [bluegenes.pages.upgrade.views :as upgrade]
             [bluegenes.pages.results.views :as results]
+            [bluegenes.pages.cetsaresults.views :as cetsaresults]
             [bluegenes.pages.regions.views :as regions]
             [bluegenes.pages.profile.views :as profile]
             [bluegenes.pages.admin.views :as admin]
@@ -42,6 +43,7 @@
      :regions-panel        regions/main
      :lists-panel          lists/main
      :projects-panel       projects/main
+     :cetsaresults-panel   cetsaresults/main
      :querybuilder-panel   qb/main
      :reset-password-panel resetpassword/main)])
 
