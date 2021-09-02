@@ -3,10 +3,10 @@
             [re-frame.std-interceptors :refer [path]]
             [bluegenes.pages.projects.utils :refer [denormalize-lists filtered-list-ids-set]]
             [bluegenes.effects :as fx]
+            [bluegenes.cetsa :refer [api-endpoint]]
             [clojure.set :as set]
             [clojure.string :as str]
             [bluegenes.db :refer [default-db]]
-            [bluegenes.config :refer [server-vars]]
             [goog.dom :as gdom]
             [oops.core :refer [oset!]]))
 
@@ -184,8 +184,6 @@
  (fn [lists [_ description]]
    (assoc-in lists [:modal :description] description)))
 
-(def api-endpoint (str/replace (:auth-api @server-vars) #"auth$" "api.php"))
-
 (reg-event-fx
  :projects/failure-get-exp
  (fn [{db :db} [_ evt]]
@@ -205,7 +203,7 @@
 (reg-event-fx
  :projects/get-experiments
  (fn [{db :db} [_]]
-   (let [service (get-in db [:mines (:current-mine db) :service])]
+   (let [service (get-in db [:mines (:local-mine db) :service])]
      {:db (assoc-in db (concat root [:fetching-exp?]) true)
       ::fx/http {:uri (str api-endpoint "?q=experiment")
                  :method :get
