@@ -253,7 +253,7 @@
       [{:start (fn []
                  (dispatch [:set-active-panel :projects-panel
                             nil
-                            [:projects/initialize]]))}]}]
+                            [:projects/get-experiments]]))}]}]
     ["/report/:type/:id"
      {:name ::report
       :controllers
