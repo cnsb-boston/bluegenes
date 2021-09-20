@@ -121,7 +121,7 @@
                      )
       ::fx/http {:uri (str api-endpoint "?q=result&id=" rid)
                  :method :get
-                 :headers {"Authorization" (str "Bearer " (:access service))}
+                 :headers {"Auth" (str "Bearer " (:access service))}
                  :on-success [:cetsaresults/success-get-results]
                  :on-failure [:cetsaresults/failure-get-results]
                  :on-unauthorised [:cetsaresults/failure-get-results]

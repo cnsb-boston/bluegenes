@@ -207,7 +207,7 @@
      {:db (assoc-in db (concat root [:fetching-exp?]) true)
       ::fx/http {:uri (str api-endpoint "?q=experiment")
                  :method :get
-                 :headers {"Authorization" (str "Bearer " (:access service))}
+                 :headers {"Auth" (str "Bearer " (:access service))}
                  :on-success [:projects/success-get-exp]
                  :on-failure [:projects/failure-get-exp]
                  :on-unauthorised [:projects/failure-get-exp]
