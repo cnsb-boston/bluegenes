@@ -15,6 +15,11 @@
    (:by-id root)))
 
 (reg-sub
+ :projects/can-edit-exp?
+ (fn [db]
+   (get-in db [:mines (:local-mine db) :service :scope :privatemetadata])))
+
+(reg-sub
  :projects/fetching?
  :<- [:projects/root]
  (fn [root]
@@ -209,6 +214,13 @@
  (fn [lists]
    (->> (map :type lists)
         (apply not=))))
+
+(reg-sub
+ :projects/modal-target-exp
+ :<- [:projects/modal-root]
+ :<- [:projects/by-id]
+ (fn [[modal by-id]]
+   (get by-id (:target-id modal))))
 
 (reg-sub
  :projects-modal/new-list-tags

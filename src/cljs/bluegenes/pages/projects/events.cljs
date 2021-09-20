@@ -8,6 +8,7 @@
             [clojure.string :as str]
             [bluegenes.db :refer [default-db]]
             [goog.dom :as gdom]
+            [goog.string :refer [parseInt]]
             [oops.core :refer [oset!]]))
 
 ;; Idea for performance improvement:
@@ -142,16 +143,10 @@
            (get-in lists [:controls :filters])))))
 
 (reg-event-db
- :projects/deselect-list
+ :projects/deselect-exp
  (path root)
- (fn [lists [_ list-id]]
-   (if (= :subtract (get-in lists [:modal :active]))
-     ;; We need to remove list-id from more places if subtract modal is active.
-     (-> lists
-         (update :selected-lists (fnil disj #{}) list-id)
-         (update-in [:modal :keep-lists] (partial filterv #(not= list-id %)))
-         (update-in [:modal :subtract-lists] (partial filterv #(not= list-id %))))
-     (update lists :selected-lists (fnil disj #{}) list-id))))
+ (fn [lists [_ exp-id]]
+   (update lists :selected-exp (fnil disj #{}) exp-id)))
 
 (reg-event-db
  :projects/clear-selected
@@ -165,6 +160,72 @@
  (fn [lists [_]]
    (let [target-id (get-in lists [:modal :target-id])]
      (update lists :selected-lists (fnil disj #{}) target-id))))
+
+(reg-event-fx
+ :projects/open-modal
+ (path root)
+ (fn [{exp :db} [_ modal-kw ?exp-id]]
+   {:db (case modal-kw
+          ;; Edit modal needs the list fields preset.
+          :edit (let [{:keys [title]} (get-in exp [:by-id] ?exp-id)]
+                  (assoc exp :modal
+                         {:active modal-kw
+                          :target-id ?exp-id
+                          :open? true
+                          :title title
+                          }))
+          ;; Default for all other modals.
+          (assoc exp :modal
+                 {:active modal-kw
+                  :target-id ?exp-id
+                  :open? true}
+                 ))}))
+
+(reg-event-fx
+ :projects/failure-modal-edit
+ (fn [{db :db} [_ evt]]
+   {:db (assoc-in db [:projects :modal :error]
+                  (str "Failed to edit experiments:" evt))
+    :log-error ["Experiment edit failure"]}))
+
+(reg-event-fx
+ :projects/success-modal-edit
+ (fn [{db :db} [_ lists]]
+   (merge
+    {:db (assoc-in db [:assets :projects] (:data lists))}
+    ;; Denormalize lists right-away if you're on the lists page.
+    (when (= :projects-panel (:active-panel db))
+      {:dispatch [:projects/get-experiments]}))))
+
+
+(reg-event-fx
+ :projects/modal-edit
+ (fn [{db :db} [_ modal-form]]
+   (prn modal-form)
+   (let [service (get-in db [:mines (:local-mine db) :service])
+         modal-form (assoc modal-form
+                           :private (if (:private modal-form) 1 0)
+                           :num_samples (parseInt (:num_samples modal-form))
+                           :num_replicates (parseInt (:num_replicates modal-form))
+                           :ID (:id modal-form)
+                           )]
+     {:db (assoc-in db (concat root [:fetching-exp?]) true)
+      ::fx/http {:uri api-endpoint
+                 :method :post
+                 :headers {"Auth" (str "Bearer " (:access service))}
+                 :on-success [:projects/success-modal-edit]
+                 :on-failure [:projects/failure-modal-edit]
+                 :on-unauthorised [:projects/failure-modal-edit]
+                 :json-params {:q "edit-experiment" :data modal-form} ; TODO full edit
+                 }
+      :dispatch [:projects/close-modal]
+      })))
+
+(reg-event-db
+ :projects/close-modal
+ (path root)
+ (fn [lists [_]]
+   (assoc-in lists [:modal :open?] false)))
 
 (reg-event-db
  :projects-modal/set-new-list-tags

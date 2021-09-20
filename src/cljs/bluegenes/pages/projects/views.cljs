@@ -161,16 +161,8 @@
               [:a {:on-click #(dispatch [:projects/set-filter filter-name value])}
                label]]))]))
 
-(defn list-row-controls [{:keys [id authorized status name]}]
+(defn list-row-controls [{:keys [id authorized]}]
   [:<>
-   (when (= status "TO_UPGRADE")
-     [:a.btn
-      {:href (route/href ::route/upgrade nil {:name name})}
-      [icon "arrow-up"]])
-   [:button.btn
-    {:on-click #(dispatch [:projects/open-modal :copy id])
-     :disabled (= status "TO_UPGRADE")}
-    [icon "list-copy"]]
    [:button.btn
     {:on-click #(dispatch [:projects/open-modal :edit id])
      :disabled (not authorized)}
@@ -252,7 +244,9 @@
         all-projects @(subscribe [:projects/all-projects])
         all-selected? @(subscribe [:projects/all-selected?])
         new-hidden-lists @(subscribe [:projects/new-hidden-lists])
-        fetching-exp? @(subscribe [:projects/fetching?])]
+        fetching-exp? @(subscribe [:projects/fetching?])
+        edit-auth @(subscribe [:projects/can-edit-exp?])
+        ]
     [:section.lists-table
 
      [:header.lists-row.lists-headers
@@ -333,7 +327,7 @@
 
      (for [{:keys [id] :as item} filtered-exp]
        ^{:key id}
-       [exp-row item])]))
+       [exp-row (assoc item :authorized edit-auth)])]))
 
 (defn no-lists []
   (let [no-lists? @(subscribe [:projects/no-exp?])
@@ -354,6 +348,124 @@
               "Click here"]
           " to clear all filters."])])))
 
+(defn modal-list-row [item & {:keys [single?]}]
+  (let [{:keys [id title run_date experiment_type project_name]} item]
+    [:tr
+     [:td.title title]
+     [:td [readable-time run_date]]
+     [:td
+      [:code.start {:class (str "start-" experiment_type)}
+       experiment_type]]
+     [:td
+      (into [:div.tags]
+            (for [n [project_name]]
+              [:code.tag n]))]
+     [:td
+      (when-not single?
+        [:button.btn.pull-right
+         {:type "button"
+          :on-click #(dispatch [:projects/deselect-exp id])}
+         [icon "remove-list" 2]])]]))
+
+(defn modal-table [items & {:keys [single?]}]
+  [:table.table.table-hover
+   [:thead
+    [:tr
+     [:th "Title"]
+     [:th "Date"]
+     [:th "Type"]
+     [:th "Tags"]
+     [:th]]] ; Empty header for row buttons.
+   [:tbody
+    (for [{:keys [id] :as item} items]
+      ^{:key id}
+      [modal-list-row item :single? single?])]])
+
+(defn update-form [atom key evt]
+  (swap! atom assoc key (oget evt :target :value)))
+
+(defn modal-edit [rform & {:keys [edit-list?]}]
+  [:<>
+   [:div [:h3 (:title @rform)]]
+   [:section.lists-table
+    (let [ks [:experiment_type :done_by :num_samples :num_replicates :assay_type :organism :run_date]
+          form @rform]
+      (conj
+        (for [k ks]
+          ^{:key k}
+          [:div.lists-row.lists-item
+           [:div.lists-col [:label (name k)]]
+           [:div.lists-col [:input.form-control {:type "text" :name k :value (k form)
+                                    :on-change (partial update-form rform k)
+                                    }]]])
+        [:div.lists-row.lists-item
+         [:div.lists-col [:label "Private"]]
+         [:div.lists-col [:input.form-control {:type "checkbox" :checked (:private form)
+                                  :on-change #(swap! rform assoc :private (not (:private form)))}]]]))]])
+
+(defn modal-other-operation [target-exp]
+  (let [active-modal @(subscribe [:projects/active-modal])
+        selected-exp @(subscribe [:projects/selected-exp-details])
+        list-items (if @target-exp [@target-exp] selected-exp)]
+    [:<>
+     (case active-modal
+       :delete
+       [modal-table list-items :single? (boolean @target-exp)]
+       :edit
+       [:div
+        [modal-edit target-exp :edit-list? true]]
+       )]))
+
+(defn modal []
+  (let [modal-open? @(subscribe [:projects/modal-open?])
+        active-modal @(subscribe [:projects/active-modal])
+        modal-form (r/atom @(subscribe [:projects/modal-target-exp]))
+        ]
+    [:<>
+     [:div.fade.modal-backdrop
+      {:class (when modal-open? :show)}]
+     [:div.modal.fade.show
+      {:class (when modal-open? :in)
+       :tab-index "-1"
+       :role "dialog"}
+      [:div.modal-dialog.modal-lg
+       [:div.modal-content
+        [:div.modal-header
+         [:button.close
+          {:aria-hidden "true"
+           :type "button"
+           :on-click #(dispatch [:projects/close-modal])}
+          "×"]
+         [:h3.modal-title.text-center
+          (case active-modal
+            :edit "Edit experiment"
+            "Unknown"
+            )]]
+
+        [:div.modal-body
+         (case active-modal
+           (:delete :edit :copy :move) [modal-other-operation modal-form]
+           nil)
+         ]
+
+        [:div.modal-footer
+         [:div.btn-toolbar.pull-right
+          [:button.btn.btn-default
+           {:type "button"
+            :on-click #(dispatch [:projects/close-modal])}
+           "Cancel"]
+          [:button.btn.btn-primary.btn-raised
+           {:type "button"
+            :on-click
+            (case active-modal
+              :delete #(dispatch [:projects/delete])
+              :edit #(dispatch [:projects/modal-edit @modal-form])
+              #())}
+           (case active-modal
+             :delete "Delete experiment(s)"
+             :edit "Save"
+             nil)]]]]]]]))
+
 (defn main []
   [:div.container-fluid.lists
    [filter-lists]
@@ -361,4 +473,5 @@
    [lists]
    [no-lists]
    [pagination-bottom]
-   [bottom-controls]])
+   [bottom-controls]
+   [modal]])
