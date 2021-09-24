@@ -42,9 +42,9 @@
 ;; If a requirement exists for the target panel, it will be called with the db
 ;; as argument and its return value decides whether the panel will be changed.
 (let [requirements
-      {:profile-panel #(map? (get-in % [:mines (:current-mine %) :auth :identity]))
-       :admin-panel #(get-in % [:mines (:current-mine %) :auth :identity :superuser])
-       :reset-password-panel #(empty? (get-in % [:mines (:current-mine %) :auth :identity]))}]
+      {:profile-panel #(map? (get-in % [:mines (:local-mine %) :auth :identity]))
+       :admin-panel #(get-in % [:mines (:local-mine %) :auth :identity :superuser])
+       :reset-password-panel #(empty? (get-in % [:mines (:local-mine %) :auth :identity]))}]
   ;; Change the main panel to a new view.
   (reg-event-fx
    :do-active-panel

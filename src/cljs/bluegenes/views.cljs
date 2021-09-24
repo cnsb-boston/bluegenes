@@ -19,7 +19,7 @@
             [bluegenes.pages.cetsaresults.views :as cetsaresults]
             [bluegenes.pages.regions.views :as regions]
             [bluegenes.pages.profile.views :as profile]
-            [bluegenes.pages.admin.views :as admin]
+            [bluegenes.pages.cetsaadmin.views :as admin]
             [bluegenes.pages.tools.view :as tools]
             [bluegenes.pages.resetpassword.views :as resetpassword]
             [bluegenes.components.loader :as loader]

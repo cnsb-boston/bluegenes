@@ -141,8 +141,8 @@
       [{:start (fn []
                  (dispatch [:set-active-panel :admin-panel
                             nil
-                            [:bluegenes.pages.admin.events/init]])
-                 (dispatch [:bluegenes.components.tools.events/fetch-tools]))}]}]
+                            [:bluegenes.pages.cetsaadmin.events/init]])
+                 (comment dispatch [:bluegenes.components.tools.events/fetch-tools]))}]}]
     ["/tools"
      {:name ::tools
       :controllers

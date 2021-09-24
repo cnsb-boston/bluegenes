@@ -49,22 +49,23 @@
  ::login-success
  ;; Store a user's identity and assoc their token to the service of the current mine,
  ;; then (re)fetch the user's lists.
- (fn [db [_ {:keys [access_token refresh_token scope]}]]
+ (fn [db [_ {:keys [access_token refresh_token expires_in scope]}]]
    (let [current-mine (:local-mine db)
          username (get-in db [:mines current-mine :auth :username])
          parse-scopes (fn [scopes] (->> (str/split scopes " ")
                                         (map (fn [k] {(keyword k) true}))
-                                        (apply merge)))]
+                                        (apply merge)))
+         scopes (parse-scopes scope)]
      (-> db
-              (update-in [:mines current-mine :auth] assoc
-                         :thinking? false
-                         :identity {:preferences {:email username}}
-                         :message "ok"
-                         :error? false)
-              (assoc-in [:mines current-mine :service] {:access access_token :refresh refresh_token :scope (parse-scopes scope)})
-
-              )
-      )))
+         (update-in [:mines current-mine :auth] assoc
+                    :thinking? false
+                    :identity {:preferences {:email username}
+                               :superuser (:admin scopes)}
+                    :message "ok"
+                    :error? false)
+         (assoc-in [:mines current-mine :service] {:access access_token :refresh refresh_token :scope scopes :expires expires_in})
+         )
+     )))
 
 (reg-event-db
  ::login-failure

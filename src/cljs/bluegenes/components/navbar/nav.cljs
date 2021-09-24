@@ -79,7 +79,7 @@
         {:keys [username password]} @credentials
         submit-fn #(dispatch [:bluegenes.events.auth/register username password])]
     [:form.login-form
-     [:h2 (str "Register on " (:name current-mine))]
+     [:h2 (str "Register on CETSAMINE")]
      [:div.form-group
       [:label "Email"]
       [:input.form-control

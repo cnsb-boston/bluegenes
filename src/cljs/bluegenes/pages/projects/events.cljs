@@ -201,7 +201,6 @@
 (reg-event-fx
  :projects/modal-edit
  (fn [{db :db} [_ modal-form]]
-   (prn modal-form)
    (let [service (get-in db [:mines (:local-mine db) :service])
          modal-form (assoc modal-form
                            :private (if (:private modal-form) 1 0)
@@ -216,7 +215,7 @@
                  :on-success [:projects/success-modal-edit]
                  :on-failure [:projects/failure-modal-edit]
                  :on-unauthorised [:projects/failure-modal-edit]
-                 :json-params {:q "edit-experiment" :data modal-form} ; TODO full edit
+                 :json-params {:q "edit-experiment" :data modal-form}
                  }
       :dispatch [:projects/close-modal]
       })))
