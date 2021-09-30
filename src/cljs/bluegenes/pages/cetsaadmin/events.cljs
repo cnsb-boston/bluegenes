@@ -1,7 +1,7 @@
 (ns bluegenes.pages.cetsaadmin.events
   (:require [re-frame.core :refer [reg-event-db reg-fx reg-event-fx]]
             [bluegenes.effects :as fx]
-            [bluegenes.cetsa :refer [api-endpoint]]
+            [bluegenes.cetsa :as cx :refer [api-endpoint]]
             [clojure.string :as str]))
 
 (def root [:cetsaadmin])
@@ -26,8 +26,7 @@
 (reg-event-fx
  :cetsaadmin/setrole
  (fn [{db :db} [_ form]]
-   (let [service (get-in db [:mines (:local-mine db) :service])
-         args {:username (:username form)
+   (let [args {:username (:username form)
                :scope (case (:role form)
                         :user "user"
                         :member "user privatedata privatemetadata"
@@ -35,12 +34,10 @@
                         )
                }]
      {:db (assoc-in db (concat root [:working?]) true)
-      ::fx/http {:uri api-endpoint
+      ::cx/http {:uri api-endpoint
                  :method :post
-                 :headers {"Auth" (str "Bearer " (:access service))}
                  :on-success [:cetsaadmin/success-setrole]
-                 :on-failure [:cetsaadmin/failure-setrole]
-                 :on-unauthorised [:cetsaadmin/failure-setrole]
+                 :on-error [:cetsaadmin/failure-setrole]
                  :json-params {:q "set-scope" :data args}
                  }
       :dispatch [:projects/close-modal]

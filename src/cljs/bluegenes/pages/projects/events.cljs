@@ -3,7 +3,7 @@
             [re-frame.std-interceptors :refer [path]]
             [bluegenes.pages.projects.utils :refer [denormalize-lists filtered-list-ids-set]]
             [bluegenes.effects :as fx]
-            [bluegenes.cetsa :refer [api-endpoint]]
+            [bluegenes.cetsa :as cx :refer [api-endpoint]]
             [clojure.set :as set]
             [clojure.string :as str]
             [bluegenes.db :refer [default-db]]
@@ -201,20 +201,17 @@
 (reg-event-fx
  :projects/modal-edit
  (fn [{db :db} [_ modal-form]]
-   (let [service (get-in db [:mines (:local-mine db) :service])
-         modal-form (assoc modal-form
+   (let [modal-form (assoc modal-form
                            :private (if (:private modal-form) 1 0)
                            :num_samples (parseInt (:num_samples modal-form))
                            :num_replicates (parseInt (:num_replicates modal-form))
                            :ID (:id modal-form)
                            )]
      {:db (assoc-in db (concat root [:fetching-exp?]) true)
-      ::fx/http {:uri api-endpoint
+      ::cx/http {:uri api-endpoint
                  :method :post
-                 :headers {"Auth" (str "Bearer " (:access service))}
                  :on-success [:projects/success-modal-edit]
-                 :on-failure [:projects/failure-modal-edit]
-                 :on-unauthorised [:projects/failure-modal-edit]
+                 :on-error [:projects/failure-modal-edit]
                  :json-params {:q "edit-experiment" :data modal-form}
                  }
       :dispatch [:projects/close-modal]
@@ -247,9 +244,11 @@
 (reg-event-fx
  :projects/failure-get-exp
  (fn [{db :db} [_ evt]]
-   {:db (assoc-in db [:projects :modal :error]
+   (let [db (assoc-in db [:projects :modal :error]
                   (str "Failed to fetch experiments:" evt))
-    :log-error ["Experiments fetch failure"]}))
+         db (assoc-in db (concat root [:fetching-exp?]) false)]
+     {:db db
+    :log-error ["Experiments fetch failure"]})))
 
 (reg-event-fx
  :projects/success-get-exp
@@ -263,13 +262,10 @@
 (reg-event-fx
  :projects/get-experiments
  (fn [{db :db} [_]]
-   (let [service (get-in db [:mines (:local-mine db) :service])]
-     {:db (assoc-in db (concat root [:fetching-exp?]) true)
-      ::fx/http {:uri (str api-endpoint "?q=experiment")
-                 :method :get
-                 :headers {"Auth" (str "Bearer " (:access service))}
-                 :on-success [:projects/success-get-exp]
-                 :on-failure [:projects/failure-get-exp]
-                 :on-unauthorised [:projects/failure-get-exp]
-                 }})))
+   {:db (assoc-in db (concat root [:fetching-exp?]) true)
+    ::cx/http {:uri (str api-endpoint "?q=experiment")
+               :method :get
+               :on-success [:projects/success-get-exp]
+               :on-error [:projects/failure-get-exp]
+               }}))
 

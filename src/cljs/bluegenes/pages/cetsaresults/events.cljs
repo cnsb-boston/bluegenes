@@ -3,7 +3,7 @@
             [re-frame.std-interceptors :refer [path]]
             [bluegenes.effects :as fx]
             [imcljs.fetch :as fetch]
-            [bluegenes.cetsa :refer [api-endpoint]]
+            [bluegenes.cetsa :as cx :refer [api-endpoint]]
             [clojure.set :as set] [clojure.string :as str]
             [bluegenes.db :refer [default-db]]
             [goog.dom :as gdom]
@@ -110,20 +110,15 @@
 (reg-event-fx
  :cetsaresults/get-results
  (fn [{db :db} [_ rid]]
-   (let [service (get-in db [:mines (:local-mine db) :service])]
-     {
-      ;:db (assoc-in db (concat root [:fetching-res?]) true)
-      :db (update-in db root assoc
-                     :fetching-res? true
-                     :by-prot {}
-                     :by-drug {}
-                     :plot-type :volcano
-                     )
-      ::fx/http {:uri (str api-endpoint "?q=result&id=" rid)
-                 :method :get
-                 :headers {"Auth" (str "Bearer " (:access service))}
-                 :on-success [:cetsaresults/success-get-results]
-                 :on-failure [:cetsaresults/failure-get-results]
-                 :on-unauthorised [:cetsaresults/failure-get-results]
-                 }})))
+   {:db (update-in db root assoc
+                   :fetching-res? true
+                   :by-prot {}
+                   :by-drug {}
+                   :plot-type :volcano
+                   )
+    ::cx/http {:uri (str api-endpoint "?q=result&id=" rid)
+               :method :get
+               :on-success [:cetsaresults/success-get-results]
+               :on-error [:cetsaresults/failure-get-results]
+               }}))
 
