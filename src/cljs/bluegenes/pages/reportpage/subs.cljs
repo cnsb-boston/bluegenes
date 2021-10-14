@@ -35,6 +35,23 @@
    (:lists report)))
 
 (reg-sub
+ ::report-cetsa-dbid
+ :<- [::report-summary]
+ (fn [sum]
+   (let [rc (:rootClass sum)
+         res (zipmap (:views sum) (first (:results sum)))]
+     (get res
+          (case rc
+            "DrugCompound" "DrugCompound.drugBankId"
+            "Protein" "Protein.primaryAccession")))))
+
+(reg-sub
+ ::report-cetsa
+ :<- [::report]
+ (fn [report]
+   (:cetsa report)))
+
+(reg-sub
  ::report-external-links
  :<- [::report]
  (fn [report]

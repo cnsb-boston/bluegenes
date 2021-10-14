@@ -30,6 +30,7 @@
                  [markdown-to-hiccup "0.6.2"]
                  [cljsjs/react-day-picker "7.3.0-1"]
                  [cljsjs/react-select "2.4.4-0"]
+                 [cljsjs/react-table "6.8.6-0"]
 
                  ; HTTP
                  [clj-http "3.10.0"]

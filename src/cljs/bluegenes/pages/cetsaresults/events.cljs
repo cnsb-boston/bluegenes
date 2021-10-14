@@ -64,31 +64,38 @@
    (update-in db root assoc :plot-type p-type)))
 
 (reg-event-fx
- :cetsaresults/failure-protein-info
+ :cetsaresults/failure-im-info
  (fn [{db :db} [_ evt]]
    {:db (assoc-in db [:cetsaresults :modal :error]
                   (str "Failed to fetch results: " evt))
     :log-error ["Results fetch failure"]}))
 
 (reg-event-fx
- :cetsaresults/success-protein-info
- (fn [{db :db} [_ lists]]
+ :cetsaresults/success-im-info
+ (fn [{db :db} [_ dest lists]]
    (merge
-     {:db (assoc-in db [:assets :cetsaresults-prot] (:results lists))}
+     {:db (assoc-in db dest (:results lists))}
      (when (= :cetsaresults-panel (:active-panel db))
        {:dispatch [:cetsaresults/initialize]}))))
 
+(defn get-q [k v]
+  (case k
+    :prot {:from "Protein"
+           :select ["primaryAccession", "name"]
+           :where [{:path "Protein.primaryAccession" :op "ONE OF" :values v}]}
+    :drug {:from "DrugCompound"
+           :select ["drugBankId", "name"]
+           :where [{:path "DrugCompound.drugBankId" :op "ONE OF" :values v}]}))
+
 (reg-event-fx
- :cetsaresults/protein-info
- (fn [{db :db} [_ uniprot]]
+ :cetsaresults/im-info-from-id
+ (fn [{db :db} [_ class id dest]]
    (let [service (get-in db [:mines (:current-mine db) :service])
-         q {:from "Protein"
-            :select ["primaryAccession", "name"]
-            :where [{:path "Protein.primaryAccession" :op "ONE OF" :values uniprot}] } ]
+         q (get-q class id)]
      {:db db
       :im-chan {:chan (fetch/rows service q {:format "jsonobjects"})
-                :on-success [:cetsaresults/success-protein-info]
-                :on-failure [:cetsaresults/failure-protein-info]
+                :on-success [:cetsaresults/success-im-info dest]
+                :on-failure [:cetsaresults/failure-im-info]
                  }})))
 
 (reg-event-fx
@@ -105,7 +112,7 @@
          plist (map :uniprot res)]
      (merge
        {:db (assoc-in db [:assets :cetsaresults] res)}
-       {:dispatch [:cetsaresults/protein-info plist]}))))
+       {:dispatch [:cetsaresults/im-info-from-id :prot plist [:assets :cetsaresults-prot]]}))))
 
 (reg-event-fx
  :cetsaresults/get-results
@@ -120,5 +127,31 @@
                :method :get
                :on-success [:cetsaresults/success-get-results]
                :on-error [:cetsaresults/failure-get-results]
+               }}))
+
+(reg-event-fx
+ :cetsaresults/failure-get-results-by
+ (fn [{db :db} [_ evt]]
+   {:log-error ["Results fetch failure"]}))
+
+(reg-event-fx
+ :cetsaresults/success-get-results-by
+ (fn [{db :db} [_ class lists]]
+   (let [ckeys (case class
+                 :drug [:uniprot]
+                 :prot [:drugbankID])
+         res (->> (:data lists)
+                  (map #(select-keys % ckeys))
+                  (map vals)
+                  (flatten))]
+     {:dispatch [:cetsaresults/im-info-from-id ((keyword class) {:prot :drug :drug :prot}) res [:report :cetsa]]})))
+
+(reg-event-fx
+ :cetsaresults/get-results-by
+ (fn [{db :db} [_ class id]]
+   {::cx/http {:uri (str api-endpoint "?q=" class "&id=" id)
+               :method :get
+               :on-success [:cetsaresults/success-get-results-by (keyword (subs class 0 4))]
+               :on-error [:cetsaresults/failure-get-results-by]
                }}))
 

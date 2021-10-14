@@ -10,6 +10,7 @@
             [bluegenes.components.tools.views :as tools]
             [bluegenes.pages.reportpage.events :as events]
             [bluegenes.pages.reportpage.subs :as subs]
+            [bluegenes.pages.cetsaresults.events]
             [im-tables.views.core :as im-table]
             [bluegenes.route :as route]
             [bluegenes.components.viz.views :as viz]
@@ -18,7 +19,10 @@
             [bluegenes.components.bootstrap :refer [poppable]]
             [bluegenes.utils :refer [encode-file]]
             [oops.core :refer [ocall oget]]
+            [cljsjs.react-table]
             [goog.functions :refer [debounce]]))
+
+(def ReactTable (aget js/ReactTable "default"))
 
 (defn tbl [{:keys [loc collapse]}]
   (let [data (subscribe [::subs/a-table loc])
@@ -106,6 +110,40 @@
           :settings (->report-table-settings current-mine-name)
           :id id}]))
 
+(defn fetch-res-data [report id]
+  (dispatch [:cetsaresults/get-results-by report id]))
+
+(defn cetsarow-click-fn [target-class state rowInfo instance]
+  (clj->js {:onClick #(dispatch [::route/navigate
+                                ::route/report {:type target-class
+                                                :id (aget rowInfo "row" "objectId")}])}))
+
+(defn make-report [id {:keys [fetch col link]}]
+  (let [crep @(subscribe [::subs/report-cetsa])]
+    (fetch-res-data fetch id)
+    [:div
+     (if (empty? crep)
+       "None / Loading"
+       [:> ReactTable {:data crep :columns (conj col {:Header "objectId" :accessor "objectId" :show false})
+                       :pageSize (min (count crep) 5)
+                       :getTrProps (partial cetsarow-click-fn link)}])]))
+
+(defn cetsa-report []
+  (let [{:keys [rootClass]} @(subscribe [::subs/report-summary])
+        cid @(subscribe [::subs/report-cetsa-dbid])]
+    (case rootClass
+      "Protein"
+      [make-report cid {:fetch "protein"
+                        :col [{:Header "DrugName" :accessor "name"}
+                              {:Header "drugBankId" :accessor "drugBankId"}]
+                        :link "DrugCompound"}]
+      "DrugCompound"
+      [make-report cid {:fetch "drug"
+                        :col [{:Header "ProteinName" :accessor "name"}
+                              {:Header "Uniprot" :accessor "primaryAccession"}]
+                        :link "Protein"}]
+      [:div "Valid report types for CETSA: Protein, DrugCompound"])))
+
 (defn section []
   (let [collapsed* (r/atom false)]
     (fn [{:keys [title id]} & children]
@@ -154,7 +192,7 @@
                                      "template" template-report
                                      "tool"     tool-report)]]
              ^{:key id}
-             [report-comp child]))]]))]))
+             [report-comp (assoc child :collapse true)]))]]))]))
 
 (defn summary-location [[label value]]
   [:<>
@@ -320,6 +358,7 @@
                 [toc/main]]
                [:div.col-xs-10.col-lg-8
                 [summary]
+                [section {:title "CETSA" :id "CETSA"} [cetsa-report]]
                 [report]]
                [:div.col-lg-2.visible-lg-block.sidebar-container
                 [sidebar/main]]]])]))

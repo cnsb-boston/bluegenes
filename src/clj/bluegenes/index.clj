@@ -90,6 +90,7 @@
         [:link {:href rdf-url :rel "alternate" :type "application/rdf+xml" :title "RDF"}]))
     (include-css "https://cdnjs.cloudflare.com/ajax/libs/gridlex/2.2.0/gridlex.min.css")
     (include-css "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css")
+    (include-css "https://unpkg.com/react-table-v6@latest/react-table.css")
     (include-css bluegenes-css)
     (include-css im-tables-css)
     (include-css "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css")
