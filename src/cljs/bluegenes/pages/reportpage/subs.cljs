@@ -43,7 +43,8 @@
      (get res
           (case rc
             "DrugCompound" "DrugCompound.drugBankId"
-            "Protein" "Protein.primaryAccession")))))
+            "Protein" "Protein.primaryAccession"
+            nil)))))
 
 (reg-sub
  ::report-cetsa

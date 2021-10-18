@@ -182,22 +182,29 @@
  :handle-suggestions
  (fn [db [_ results]]
    (-> db
-       (assoc :suggestion-results (:results results))
+       (update :suggestion-results concat (:results results))
        (dissoc :suggestion-error))))
+
+(reg-event-fx
+ :bounce-search-cat
+ (fn [{db :db} [_ term category]]
+   (let [service (get-in db [:mines (get db :current-mine) :service])]
+     {:im-chan {:chan (fetch/quicksearch service term {:size 3
+                                                       :facet_Category category})
+                :abort :quicksearch
+                :on-success [:handle-suggestions]
+                :on-failure [:bounce-search-failure]}})))
 
 (reg-event-fx
  :bounce-search
  (fn [{db :db} [_ term]]
-   (let [service (get-in db [:mines (get db :current-mine) :service])]
-     (if (empty? term)
-       {:db (assoc db
-                   :search-term term
-                   :suggestion-results nil)}
-       {:db (assoc db :search-term term)
-        :im-chan {:chan (fetch/quicksearch service term {:size 5})
-                  :abort :quicksearch
-                  :on-success [:handle-suggestions]
-                  :on-failure [:bounce-search-failure]}}))))
+   (if (empty? term)
+     {:db (assoc db
+                 :search-term term
+                 :suggestion-results nil)}
+     {:db (assoc db :search-term term)
+      :dispatch-n [[:bounce-search-cat term "Protein"]
+                   [:bounce-search-cat term "DrugCompound"]]})))
 
 (reg-event-db
  :bounce-search-failure
