@@ -13,7 +13,7 @@
 ;; NOT resources/public/index.html.
 
 (defn deploy-url [s]
-  (str (:deploy-url env) s))
+  (str (:static-deploy-url env) s))
 
 (def bundle-path (-> (utils/read-fingerprints) (utils/get-bundle-path) (deploy-url)))
 (def bundle-hash (utils/parse-bundle-hash bundle-path))

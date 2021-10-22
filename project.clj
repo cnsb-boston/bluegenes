@@ -97,8 +97,7 @@
                         (into ["shell"] compile-less-prod)
                         ["with-profile" "prod" "cljsbuild" "once" "min"]
                         "fingerprint-css"]
-               "prod" ["do" "build,"
-                       ["with-profile" "prod" "run"]]
+               "prod" ["with-profile" "prod" "do" "build," "run"]
                "biotestmine" ["do" "build,"
                               ["with-profile" "biotestmine" "run"]]
                "deploy" ["with-profile" "+uberjar" "deploy" "clojars"]
