@@ -162,6 +162,6 @@
     [mini-loader "middle"]
     [:div
      [choose-plot-type]
-     [drugs] 
+     ;[drugs]
      [proteins]])]
   )
