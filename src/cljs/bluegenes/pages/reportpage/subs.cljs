@@ -10,11 +10,16 @@
  (fn [db]
    (:report db)))
 
+(defn report-summary-map [sum]
+  (zipmap (map #(last (string/split % #"[.]")) (:views sum))
+           (first (:results sum))))
+
 (reg-sub
  ::report-summary
  :<- [::report]
  (fn [report]
-   (:summary report)))
+   (let [sum (:summary report)]
+     (assoc sum :mapped (report-summary-map sum)))))
 
 (reg-sub
  ::report-error
@@ -35,15 +40,39 @@
    (:lists report)))
 
 (reg-sub
- ::report-cetsa-dbid
+ ::report-summary-map
+ :<- [::report-summary]
+ (fn [sum]
+   (:mapped sum)))
+
+(reg-sub
+ ::report-mol-img
  :<- [::report-summary]
  (fn [sum]
    (let [rc (:rootClass sum)
-         res (zipmap (:views sum) (first (:results sum)))]
-     (get res
+         res (:mapped sum)
+         oid (get res "originalId")
+         make-img-str
+         (fn [type id]
+           (case type
+             "KeggCompound" (str "https://www.kegg.jp/Fig/compound/" id ".gif")
+             "PubChemCompound" (str "https://pubchem.ncbi.nlm.nih.gov/image/imgsrv.fcgi?cid=" id "&t=l")
+             "ChemblCompound" (str "https://www.ebi.ac.uk/chembl/api/data/image/" id ".svg")
+             "PDBCompound" (str "https://cdn.rcsb.org/images/ccd/labeled/" (first id) "/" id ".svg")
+             "DrugCompound" (str "https://www.kegg.jp/Fig/drug/" id ".gif")
+             nil))]
+     (make-img-str rc oid)
+     )))
+
+(reg-sub
+ ::report-cetsa-dbid
+ :<- [::report-summary]
+ (fn [sum]
+   (let [rc (:rootClass sum)]
+     (get (:mapped sum)
           (case rc
-            "DrugCompound" "DrugCompound.drugBankId"
-            "Protein" "Protein.primaryAccession"
+            "DrugCompound" "drugBankId"
+            "Protein" "primaryAccession"
             nil)))))
 
 (reg-sub

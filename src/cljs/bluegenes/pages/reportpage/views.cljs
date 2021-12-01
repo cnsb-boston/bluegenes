@@ -194,6 +194,11 @@
              ^{:key id}
              [report-comp (assoc child :collapse true)]))]]))]))
 
+(defn chemimg [imgsrc]
+  [:<>
+   [:div
+    [:img {:src imgsrc :height 250}]]])
+
 (defn summary-location [[label value]]
   [:<>
    [:div.report-table-cell.report-table-header
@@ -358,6 +363,8 @@
                 [toc/main]]
                [:div.col-xs-10.col-lg-8
                 [summary]
+                (when-let [imgsrc @(subscribe [::subs/report-mol-img])]
+                  [section {:title "Structure" :id "Structure"} [chemimg imgsrc]])
                 [section {:title "CETSA" :id "CETSA"} [cetsa-report]]
                 [report]]
                [:div.col-lg-2.visible-lg-block.sidebar-container
