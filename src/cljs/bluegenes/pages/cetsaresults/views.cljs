@@ -14,11 +14,19 @@
             [goog.string :as gstring]))
 
 (defn drugs []
-  [:div.grid-4
+  [:div
+   [:h4 "Drug reports:"]
+   [:div.grid-4
    (for [d @(subscribe [:cetsaresults/drugs])]
-     [:div.col d]
+       ^{:key (keyword d)}
+     [:div.col
+      {:style {:text-decoration "underline" :cursor "pointer" :border-style "solid" :border-width 1 :text-align "center"}
+       :on-click #(do
+                    (dispatch [:search/full-search d])
+                    (dispatch [::route/navigate ::route/search nil {:keyword d}]))} ;;; TODO: by pubdbID?
+      d]
      )
-   ]
+   ]]
   )
 
 (defn vegaspec-curve [points lines]
@@ -161,7 +169,7 @@
    (if @(subscribe [:cetsaresults/fetching?])
     [mini-loader "middle"]
     [:div
+     [drugs]
      [choose-plot-type]
-     ;[drugs]
      [proteins]])]
   )
