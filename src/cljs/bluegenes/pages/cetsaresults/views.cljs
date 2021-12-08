@@ -80,20 +80,23 @@
                     }
          :mark "point"
          :width 600
-         }]
+         }
+        views [(assoc volc-spec
+                      :transform [{:filter "datum.PValue==0"} {:calculate "999" :as "sig"}]
+                      :height 50)
+               (assoc volc-spec
+                      :transform [{:filter "datum.PValue>0"}]
+                      :height 600
+                      :width 600)]
+        ]
     {:description "Volcano",
      :width 600
      :height 600
      :title (:drug (first data))
      :data {:values data}
-     :vconcat [(if has-zero-pval?
-                 (assoc volc-spec
-                        :transform [{:filter "datum.PValue==0"} {:calculate "999" :as "sig"}]
-                        :height 50))
-               (assoc volc-spec
-                      :transform [{:filter "datum.PValue>0"}]
-                      :height 600
-                      :width 600)]
+     :vconcat (if has-zero-pval?
+                views
+                (rest views))
      :transform [{:calculate "-log(datum.PValue)/log(10)" :as "sig"}
                  {:calculate "if(datum.sig<2, \"insig\", datum.logFC>0)" :as "posfc"}]
      :config {:range {:category ["#5079a5" "#ef8e3b" "#bbbbbb"]}}}))
