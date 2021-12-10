@@ -71,7 +71,11 @@
    (let [rc (:rootClass sum)]
      (get (:mapped sum)
           (case rc
-            "DrugCompound" "drugBankId"
+            "DrugCompound" "inchiKey"
+            "PDBCompound" "inchiKey"
+            "ChemblCompound" "inchiKey"
+            "KeggCompound" "inchiKey"
+            "PubChemCompound" "inchiKey"
             "Protein" "primaryAccession"
             nil)))))
 

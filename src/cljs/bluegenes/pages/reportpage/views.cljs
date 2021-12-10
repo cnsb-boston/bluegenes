@@ -118,31 +118,39 @@
                                 ::route/report {:type target-class
                                                 :id (aget rowInfo "row" "objectId")}])}))
 
+(defn cetsarow-search-fn [kw state rowInfo instance]
+  (clj->js {:onClick #(when-let [kw-v (aget rowInfo "row" kw)]
+                        (dispatch [::route/navigate
+                                   ::route/search nil {:keyword kw-v}]))}))
+
 (defn make-report [id {:keys [fetch col link]}]
   (let [crep @(subscribe [::subs/report-cetsa])]
     (fetch-res-data fetch id)
     [:div
      (if (empty? crep)
        "None / Loading"
-       [:> ReactTable {:data crep :columns (conj col {:Header "objectId" :accessor "objectId" :show false})
+       [:> ReactTable {:data crep :columns col
                        :pageSize (min (count crep) 5)
-                       :getTrProps (partial cetsarow-click-fn link)}])]))
+                       :getTrProps link}])]))
 
 (defn cetsa-report []
   (let [{:keys [rootClass]} @(subscribe [::subs/report-summary])
-        cid @(subscribe [::subs/report-cetsa-dbid])]
-    (case rootClass
-      "Protein"
+        cid @(subscribe [::subs/report-cetsa-dbid])
+        drugtypes #{"DrugCompound" "PDBCompound" "ChemblCompound" "KeggCompound" "PubChemCompound"}]
+    (condp some  #{rootClass}
+      #{"Protein"}
       [make-report cid {:fetch "protein"
-                        :col [{:Header "DrugName" :accessor "name"}
-                              {:Header "drugBankId" :accessor "drugBankId"}]
-                        :link "DrugCompound"}]
-      "DrugCompound"
+                        :col [{:Header "DrugName" :accessor "drugname"}
+                              {:Header "drugBankId" :accessor "drugbankID"}
+                              {:Header "InChIKey" :accessor "inchikey"}]
+                        :link (partial cetsarow-search-fn "inchikey")}]
+      drugtypes
       [make-report cid {:fetch "drug"
                         :col [{:Header "ProteinName" :accessor "name"}
-                              {:Header "Uniprot" :accessor "primaryAccession"}]
-                        :link "Protein"}]
-      [:div "Valid report types for CETSA: Protein, DrugCompound"])))
+                              {:Header "Uniprot" :accessor "primaryAccession"}
+                              {:Header "objectId" :accessor "objectId" :show false}]
+                        :link (partial cetsarow-click-fn "Protein")}]
+      [:div (str "Valid report types for CETSA: Protein, " (str/join ", " drugtypes))])))
 
 (defn section []
   (let [collapsed* (r/atom false)]

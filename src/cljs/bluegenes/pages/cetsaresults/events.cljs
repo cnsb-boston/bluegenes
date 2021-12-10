@@ -139,12 +139,13 @@
  (fn [{db :db} [_ class lists]]
    (let [ckeys (case class
                  :drug [:uniprot]
-                 :prot [:drugbankID])
+                 :prot [:drugname :drugbankID :inchikey])
          res (->> (:data lists)
                   (map #(select-keys % ckeys))
-                  (map vals)
-                  (flatten))]
-     {:dispatch [:cetsaresults/im-info-from-id ((keyword class) {:prot :drug :drug :prot}) res [:report :cetsa]]})))
+                  distinct)]
+     (if  (= class :prot)
+       {:dispatch [:cetsaresults/success-im-info [:report :cetsa] {:results res}]}
+       {:dispatch [:cetsaresults/im-info-from-id :prot (flatten (map vals res)) [:report :cetsa]]}))))
 
 (reg-event-fx
  :cetsaresults/get-results-by
