@@ -20,6 +20,18 @@
    (:by-drug root)))
 
 (reg-sub
+ :cetsaresults/prot-intersect
+ :<- [:cetsaresults/root]
+ (fn [root]
+   (:prot-intersect root)))
+
+(reg-sub
+ :cetsaresults/filter-missing?
+ :<- [:cetsaresults/root]
+ (fn [root]
+   (:filter-missing root)) )
+
+(reg-sub
  :cetsaresults/fetching?
  :<- [:cetsaresults/root]
  (fn [root]

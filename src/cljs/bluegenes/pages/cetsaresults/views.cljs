@@ -171,7 +171,19 @@
     [vega-lite (vegaspec-heat r)]))
 
 (defn heatmap []
-  [:div [plotheat @(subscribe [:cetsaresults/all-results])]])
+  (let [hr @(subscribe [:cetsaresults/all-results])
+        is-selected @(subscribe [:cetsaresults/filter-missing?])
+        prot-intersect @(subscribe [:cetsaresults/prot-intersect])
+        hr (if is-selected (filter #(get prot-intersect (:uniprot %)) hr) hr)
+        ]
+    [:div
+   [:div 
+    [:span "Filter missing?"]
+    [:input
+     {:type "checkbox"
+      :checked is-selected
+      :on-change #(dispatch [:cetsaresults/filter-missing (oget % :target :checked)])}]]
+   [:div [plotheat hr]]]))
 
 (defn proteins []
   [:div.grid-spaceBetween

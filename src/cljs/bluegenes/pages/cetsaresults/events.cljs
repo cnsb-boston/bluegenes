@@ -4,7 +4,8 @@
             [bluegenes.effects :as fx]
             [imcljs.fetch :as fetch]
             [bluegenes.cetsa :as cx :refer [api-endpoint]]
-            [clojure.set :as set] [clojure.string :as str]
+            [clojure.set :as set]
+            [clojure.string :as str]
             [bluegenes.db :refer [default-db]]
             [goog.dom :as gdom]
             [oops.core :refer [oset!]]))
@@ -49,14 +50,20 @@
                        (map (fn [m] (merge m (get prot-info (:uniprot m))))))
           by-prot (prot-order all-res)
           by-drug (drug-order all-res)
-          ]
+          prot-intersect (apply set/intersection (map #(set (map :uniprot %)) (vals by-drug)))]
       (update-in db root assoc
                  :fetching-res? false
                  :all-results all-res
                  :by-prot by-prot
                  :by-drug by-drug
                  :prot-names prot-info
+                 :prot-intersect prot-intersect
                  ))))
+
+(reg-event-db
+ :cetsaresults/filter-missing
+ (fn [db [_ filter?]]
+   (update-in db root assoc :filter-missing filter?)))
 
 (reg-event-db
  :cetsaresults/set-plot-type
