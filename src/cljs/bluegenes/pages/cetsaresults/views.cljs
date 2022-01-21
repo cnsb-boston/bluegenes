@@ -29,6 +29,28 @@
    ]]
   )
 
+(defn vegaspec-heat [data]
+  {:description "Heatmap",
+   :title "Protein-Drug abundance"
+   :width 600
+   :height 600
+   :config {:view {:strokeWidth 0 :step 13}
+            :axis {:domain false}
+            :range {:heatmap {:scheme "viridis"}}
+            }
+   :data {:values data}
+   :mark "rect"
+   :encoding {:x {:type "ordinal"
+                  :field "drugbankID"
+                  }
+              :y {:field "uniprot"
+                  :type "ordinal"}
+              :color {:field "logFC"
+                      :type "quantitative"
+                      :aggregate "max"
+                      :legend {:title nil}
+                      }}})
+
 (defn vegaspec-curve [points lines]
   ; data: [{:x # :y # :drug ""} ...]
   {:description "DR/Melt curves",
@@ -144,6 +166,12 @@
                                                   (dispatch [::route/navigate
                                                              ::route/report {:type "Protein"
                                                                             :id pid}])))))}]))
+(defn plotheat [r]
+  (let [r (map (fn [x] (assoc x :logFC (last (s->ar (:fold_change x))))) r)]
+    [vega-lite (vegaspec-heat r)]))
+
+(defn heatmap []
+  [:div [plotheat @(subscribe [:cetsaresults/all-results])]])
 
 (defn proteins []
   [:div.grid-spaceBetween
@@ -174,5 +202,7 @@
     [:div
      [drugs]
      [choose-plot-type]
-     [proteins]])]
+     [proteins]
+     [heatmap]
+     ])]
   )
