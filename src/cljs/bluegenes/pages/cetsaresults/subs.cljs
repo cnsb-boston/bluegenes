@@ -77,4 +77,8 @@
  :cetsaresults/drugs
  :<- [:cetsaresults/all-results]
  (fn [res]
-   (->> res (map :drugname) distinct sort)))
+   (->> res
+        (map :drugname)
+        (map #(str/replace % #"^\d*[.]" ""))
+        distinct
+        sort)))

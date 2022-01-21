@@ -125,10 +125,10 @@
      scroll-top? (assoc :scroll-to-top {:ms 0}))))
 
 (reg-event-db
- :projects/select-list
+ :projects/select-exp
  (path root)
  (fn [lists [_ list-id]]
-   (update lists :selected-lists (fnil conj #{}) list-id)))
+   (update lists :selected-exp (fnil conj #{}) list-id)))
 
 ;; It would be more efficient to use a special value like `:all`, but this would
 ;; have to be handled in all event handlers reading `:selected-lists`. Not worth
@@ -152,7 +152,7 @@
  :projects/clear-selected
  (path root)
  (fn [lists [_]]
-   (assoc lists :selected-lists #{})))
+   (assoc lists :selected-exp #{})))
 
 (reg-event-db
  :projects/clear-target

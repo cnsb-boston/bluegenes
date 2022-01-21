@@ -33,22 +33,21 @@
         [icon "search"]]])))
 
 (defn bottom-controls []
-  (let [list-count (count @(subscribe [:projects/selected-exp]))]
+  (let [sel @(subscribe [:projects/selected-exp])
+        list-count (count sel)]
     (when (pos? list-count)
       [:div.bottom-controls
        [:div
         [:span.selected-indicator
-         (str "Selected " list-count (cond-> " list" (> list-count 1) (str "s")))]
+         (str "Selected " list-count (cond-> " experiment" (> list-count 1) (str "s")))]
         [:button.btn.btn-raised.btn-default
          {:on-click #(dispatch [:projects/clear-selected])}
-         "Deselect all"]]
+         "Deselect all"]
+        [:button.btn.btn-raised.btn-info
+         {:on-click #(dispatch [::route/navigate ::route/cetsaresults {:id (str/join "," sel)}])}
+         "Compare selected" [icon "venn-intersection"]]
+        ]
        [:div
-        [:button.btn.btn-raised.btn-info
-         {:on-click #(dispatch [:projects/open-modal :move])}
-         "Move all" [icon "new-folder"]]
-        [:button.btn.btn-raised.btn-info
-         {:on-click #(dispatch [:projects/open-modal :copy])}
-         "Copy all" [icon "list-copy"]]
         [:button.btn.btn-raised.btn-danger
          {:on-click #(dispatch [:projects/open-modal :delete])}
          "Delete all" [icon "list-delete"]]]])))
@@ -185,8 +184,8 @@
       [:input {:type "checkbox"
                :checked is-selected
                :on-change #(dispatch [(if (oget % :target :checked)
-                                        :projects/select-list
-                                        :projects/deselect-list)
+                                        :projects/select-exp
+                                        :projects/deselect-exp)
                                       id])}]
       [:span.list-icon
        {:class (when is-new :new)}
