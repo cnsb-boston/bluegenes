@@ -106,6 +106,33 @@
                  }})))
 
 (reg-event-fx
+ :cetsaresults/failure-get-files
+ (fn [{db :db} [_ evt]]
+   {:db (assoc-in db [:cetsaresults :modal :error]
+                  (str "Failed to fetch files: " evt))
+    :log-error ["Result files fetch failure"]}))
+
+;  todo: display images?
+(reg-event-fx
+ :cetsaresults/success-get-files
+ (fn [{db :db} [_ lists]]
+   (let [res (:data lists)]
+     {:db (assoc-in db [:cetsaresults :files] res)}
+     )))
+
+(reg-event-fx
+ :cetsaresults/get-files
+ (fn [{db :db} [_ rid]]
+   {:db (update-in db root assoc
+                   :files [])
+    ::cx/http {:uri (str api-endpoint "?q=list-files&id=" rid)
+               :method :get
+               :on-success [:cetsaresults/success-get-files]
+               :on-error [:cetsaresults/failure-get-files]
+               }}))
+
+
+(reg-event-fx
  :cetsaresults/failure-get-results
  (fn [{db :db} [_ evt]]
    {:db (assoc-in db [:cetsaresults :modal :error]
@@ -114,12 +141,13 @@
 
 (reg-event-fx
  :cetsaresults/success-get-results
- (fn [{db :db} [_ lists]]
+ (fn [{db :db} [_ rid lists]]
    (let [res (:data lists)
          plist (map :uniprot res)]
      (merge
        {:db (assoc-in db [:assets :cetsaresults] res)}
-       {:dispatch [:cetsaresults/im-info-from-id :prot plist [:assets :cetsaresults-prot]]}))))
+       {:dispatch-n [[:cetsaresults/get-files rid]
+                     [:cetsaresults/im-info-from-id :prot plist [:assets :cetsaresults-prot]]]} ))))
 
 (reg-event-fx
  :cetsaresults/get-results
@@ -132,7 +160,7 @@
                    )
     ::cx/http {:uri (str api-endpoint "?q=result&id=" rid)
                :method :get
-               :on-success [:cetsaresults/success-get-results]
+               :on-success [:cetsaresults/success-get-results rid]
                :on-error [:cetsaresults/failure-get-results]
                }}))
 

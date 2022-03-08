@@ -82,3 +82,9 @@
         (map #(str/replace % #"^\d*[.]" ""))
         distinct
         sort)))
+
+(reg-sub
+ :cetsaresults/files
+ :<- [:cetsaresults/root]
+ (fn [root]
+   (:files root)))

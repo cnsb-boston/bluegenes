@@ -9,9 +9,21 @@
             [bluegenes.components.viz.common :refer [vega-lite]]
             [bluegenes.subs.auth :as auth]
             [clojure.string :as str]
+            [bluegenes.cetsa :refer [api-endpoint]]
             [bluegenes.route :as route]
             [bluegenes.components.bootstrap :refer [poppable]]
             [goog.string :as gstring]))
+
+(defn files []
+  [:div
+   [:h4 "Attached files:"]
+   [:div.grid-4
+   (for [d @(subscribe [:cetsaresults/files])]
+       ^{:key (keyword (:filepath d))}
+     [:div.col
+      {:style {:text-decoration "underline" :cursor "pointer" :border-style "solid" :border-width 1 :text-align "center"}}
+      [:a {:target "_blank" :href (str api-endpoint "?q=experiment-file&dlid=" (:datafileID d))} (:filename d)]
+      ])]])
 
 (defn drugs []
   [:div
@@ -212,6 +224,7 @@
    (if @(subscribe [:cetsaresults/fetching?])
     [mini-loader "middle"]
     [:div
+     [files]
      [drugs]
      [choose-plot-type]
      [proteins]
