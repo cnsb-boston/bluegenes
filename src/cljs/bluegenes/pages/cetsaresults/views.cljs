@@ -22,7 +22,12 @@
        ^{:key (keyword (:filepath d))}
      [:div.col
       {:style {:text-decoration "underline" :cursor "pointer" :border-style "solid" :border-width 1 :text-align "center"}}
-      [:a {:target "_blank" :href (str api-endpoint "?q=experiment-file&dlid=" (:datafileID d))} (:filename d)]
+      (let [src (str api-endpoint "?q=experiment-file&dlid=" (:datafileID d))
+            link [:a {:target "_blank" :href src} (:filename d)]]
+        (if (re-matches #"^image/.*" (:filetype d))
+          [poppable {:data [:img {:src src}]
+                     :children link}]
+          link))
       ])]])
 
 (defn drugs []
