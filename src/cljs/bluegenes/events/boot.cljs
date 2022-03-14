@@ -167,11 +167,13 @@
          ;; usually defined in config.edn.
          config-mines (init-config-mines)
          mine (get config-mines current-mine)
+         local-mine (:local-mine @server-vars)
          init-db (-> db/default-db
                      (assoc-in [:env :mines] config-mines)
                      (assoc-in [:mines current-mine] mine)
                      (assoc :current-mine current-mine)
-                     (assoc :local-mine (:local-mine @server-vars))
+                     (assoc :local-mine local-mine)
+                     (assoc-in [:mines local-mine :service] (:local-service @server-vars))
                      (cond->
                        init-events (assoc :dispatch-after-boot init-events)))
          ;; Load data previously persisted to local storage.

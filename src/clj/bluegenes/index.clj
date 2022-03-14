@@ -104,7 +104,7 @@
           (let [server-vars (merge (select-keys env [:google-analytics
                                                      :bluegenes-default-service-root :bluegenes-default-mine-name :bluegenes-default-namespace
                                                      :bluegenes-additional-mines :hide-registry-mines
-                                                     :auth-api :deploy-url :local-mine])
+                                                     :auth-api :deploy-url :local-mine :local-service])
                                    {:version bundle-hash})]
             (str \" (escape-quotes (pr-str server-vars)) \"))
           ";")

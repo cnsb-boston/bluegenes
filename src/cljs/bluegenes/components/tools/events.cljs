@@ -8,7 +8,7 @@
  (fn [{db :db} [evt]]
    {:db db
     ::fx/http {:method :get
-               :uri "/api/tools/all"
+               :uri (str (get-in db [:mines (:local-mine db) :service :root]) "/api/tools/all")
                :on-success [::success-fetch-tools]
                :on-unauthorised [::error-fetch-tools evt]
                :on-error [::error-fetch-tools evt]}}))
@@ -29,7 +29,7 @@
                            (when-let [err (get-in res [:body :error])]
                              [:code err])]
                   :style "warning"
-                  :timeout 0}]})))
+                  :timeout 10}]})))
 
 (reg-event-fx
  ::fetch-npm-tools
@@ -65,7 +65,7 @@
  ::fetch-tool-path
  (fn [_ [evt]]
    {::fx/http {:method :get
-               :uri "/api/tools/path"
+               :uri "/api/tools/path" ; only used by developer page
                :on-success [::success-fetch-tool-path]
                :on-unauthorised [::error-fetch-tools evt]
                :on-error [::error-fetch-tools evt]}}))
@@ -78,7 +78,7 @@
 (reg-event-fx
  ::init-tool
  (fn [{db :db} [_ tool-details tool-id]]
-   (let [mine     (get-in db [:mines (:current-mine db)])
+   (let [mine     (get-in db [:mines (:local-mine db)])
          service  (get mine :service)]
      {:load-tool {:tool tool-details
                   :tool-id tool-id

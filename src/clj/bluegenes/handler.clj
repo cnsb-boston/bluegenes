@@ -21,7 +21,7 @@
     uri))
 
 (def combined-routes
-  (compojure/routes tool/routes routes))
+  (compojure/routes routes))
 
 (def handler (-> #'combined-routes
                  ;; Watch changes to the .clj and hot reload them

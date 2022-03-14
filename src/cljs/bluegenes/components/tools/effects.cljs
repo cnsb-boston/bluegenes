@@ -1,6 +1,7 @@
 (ns bluegenes.components.tools.effects
   (:require [re-frame.core :as rf :refer [dispatch reg-fx]]
             [oops.core :refer [ocall+ oset!]]
+            [bluegenes.config :refer [server-vars]]
             [bluegenes.components.tools.events :as events]
             [bluegenes.route :as route]
             [bluegenes.utils :refer [suitable-entities]]
@@ -80,9 +81,9 @@
         (when tool-path
           (oset! script-tag "id" script-id)
           ;;fetch script from bluegenes-tool-store backend
-          (oset! script-tag "src" (str "/tools/" (get-in tool [:names :npm])
-                                       "/" tool-path
-                                       "?v=" (get-in tool [:package :version])))
+          (oset! script-tag "src" (str "https://cdn.jsdelivr.net/npm/" (get-in tool [:names :npm])
+                                       "@" (get-in tool [:package :version])
+                                       "/" tool-path))
           ;;run-script will automatically be triggered when the script loads
           (oset! script-tag "onload" #(run-script! tool tool-id
                                                    :service service
@@ -103,9 +104,9 @@
         (when style-path
           ;;fetch stylesheet and set some properties
           (oset! style-tag "id" style-id)
-          (oset! style-tag "href" (str "/tools/" (get-in tool [:names :npm])
-                                       "/" style-path
-                                       "?v=" (get-in tool [:package :version])))
+          (oset! style-tag "href" (str "https://cdn.jsdelivr.net/npm/" (get-in tool [:names :npm])
+                                       "@" (get-in tool [:package :version])
+                                       "/" style-path))
           (oset! style-tag "type" "text/css")
           (oset! style-tag "rel" "stylesheet")
           ;;append to dom
