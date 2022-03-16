@@ -11,7 +11,9 @@
  ;failure conditions: expired, revoked by server
  ::token-failure
  (fn [{db :db} [_ on-error]]
-   {:db (update-in db [:mines (:local-mine db)] dissoc :service :auth)
+     {:db (-> db
+              (update-in [:mines (:local-mine db)] dissoc :auth)
+              (update-in [:mines (:local-mine db) :service] dissoc :access))
     :log-error "Credentials expired. Please login again."
     :dispatch on-error
     }))
@@ -20,8 +22,8 @@
  ::http
  (fn [payload]
    (let [db rdb/app-db
-         service (get-in @db [:mines (:local-mine @db) :service])
+         access (get-in @db [:mines (:local-mine @db) :service :access])
          payload (assoc payload
                         :on-unauthorised [::token-failure (:on-error payload)]
-                        :headers (if service {"Auth" (str "Bearer " (:access service))} {}))]
+                        :headers (if access {"Auth" (str "Bearer " access)} {}))]
      (fx/http-fxfn payload))))

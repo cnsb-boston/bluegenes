@@ -63,7 +63,7 @@
                                :superuser (:admin scopes)}
                     :message "ok"
                     :error? false)
-         (assoc-in [:mines current-mine :service] {:access access_token :refresh refresh_token :scope scopes :expires expires_in})
+         (update-in [:mines current-mine :service] assoc :access access_token :refresh refresh_token :scope scopes :expires expires_in)
          )
      )))
 
@@ -103,7 +103,7 @@
                          :identity nil
                          :error? false
                          :message nil)
-              (assoc-in [:mines current-mine :service] nil)
+              (update-in [:mines current-mine :service] dissoc :access :refresh :scope :expires)
               (route/force-controllers-rerun))
       :dispatch-n [[:remove-login current-mine]
                    [:reboot]]})))
