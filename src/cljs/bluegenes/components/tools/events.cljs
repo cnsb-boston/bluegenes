@@ -29,7 +29,7 @@
                            (when-let [err (get-in res [:body :error])]
                              [:code err])]
                   :style "warning"
-                  :timeout 10}]})))
+                  :timeout 5000}]})))
 
 (reg-event-fx
  ::fetch-npm-tools
