@@ -11,12 +11,14 @@
  ;failure conditions: expired, revoked by server
  ::token-failure
  (fn [{db :db} [_ on-error]]
+   (let [err "Credentials expired. Please login again."]
      {:db (-> db
               (update-in [:mines (:local-mine db)] dissoc :auth)
               (update-in [:mines (:local-mine db) :service] dissoc :access))
-    :log-error "Credentials expired. Please login again."
-    :dispatch on-error
-    }))
+      :log-error [err nil]
+      :dispatch-n [[:messages/add {:markup [:span err] :style "warning" :timeout 5000}]
+                   on-error]
+      })))
 
 (reg-fx
  ::http
