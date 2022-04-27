@@ -197,7 +197,6 @@
     (when (= :projects-panel (:active-panel db))
       {:dispatch [:projects/get-experiments]}))))
 
-
 (reg-event-fx
  :projects/modal-edit
  (fn [{db :db} [_ modal-form]]
@@ -216,6 +215,33 @@
                  }
       :dispatch [:projects/close-modal]
       })))
+
+(reg-event-fx
+ :projects/failure-delete
+ (fn [{db :db} [_ evt]]
+   {:db (assoc-in db [:projects :modal :error]
+                  (str "Failed to delete experiments:" evt))
+    :log-error ["Experiment delete failure"]}))
+
+(reg-event-fx
+ :projects/success-delete
+ (fn [{db :db} [_ _]]
+   (merge
+    {:db db} ;; TODO: just filter the list using the ID? same with modal-edit
+    ;; Denormalize lists right-away if you're on the lists page.
+    (when (= :projects-panel (:active-panel db))
+      {:dispatch [:projects/get-experiments]}))))
+
+(reg-event-fx
+ :projects/delete
+ (fn [{db :db} [_ id]]
+   {:db (assoc-in db (concat root [:fetching-exp?]) true)
+      ::cx/http {:uri (str api-endpoint "?q=delete-experiment&id=" id)
+                 :method :get
+                 :on-success [:projects/success-delete id]
+                 :on-error [:projects/failure-delete]}
+      :dispatch [:projects/close-modal]
+      }))
 
 (reg-event-db
  :projects/close-modal

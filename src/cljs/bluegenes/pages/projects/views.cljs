@@ -457,7 +457,7 @@
            {:type "button"
             :on-click
             (case active-modal
-              :delete #(dispatch [:projects/delete])
+              :delete #(dispatch [:projects/delete (:id @modal-form)])
               :edit #(dispatch [:projects/modal-edit @modal-form])
               #())}
            (case active-modal
