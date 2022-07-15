@@ -8,6 +8,12 @@
    (:auth current-mine)))
 
 (reg-sub
+ ::access
+ :<- [:local-mine]
+ (fn [current-mine]
+   (get-in current-mine [:service :access])))
+
+(reg-sub
  ::identity
  :<- [::auth]
  (fn [auth]

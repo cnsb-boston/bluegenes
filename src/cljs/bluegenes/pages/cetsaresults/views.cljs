@@ -18,17 +18,18 @@
   [:div
    [:h4 "Attached files:"]
    [:div.grid-4
-   (for [d @(subscribe [:cetsaresults/files])]
-       ^{:key (keyword (:filepath d))}
-     [:div.col
-      {:style {:text-decoration "underline" :cursor "pointer" :border-style "solid" :border-width 1 :text-align "center"}}
-      (let [src (str api-endpoint "?q=experiment-file&dlid=" (:datafileID d))
-            link [:a {:target "_blank" :href src} (:filename d)]]
-        (if (re-matches #"^image/.*" (:filetype d))
-          [poppable {:data [:img {:src src}]
-                     :children link}]
-          link))
-      ])]])
+    (let [token @(subscribe [::auth/access])]
+      (for [d @(subscribe [:cetsaresults/files])]
+        ^{:key (keyword (:filepath d))}
+        [:div.col
+         {:style {:text-decoration "underline" :cursor "pointer" :border-style "solid" :border-width 1 :text-align "center"}}
+         (let [src (str api-endpoint "?q=experiment-file&dlid=" (:datafileID d) "&access_token=" token)
+               link [:a {:target "_blank" :href src} (:filename d)]]
+           (if (re-matches #"^image/.*" (:filetype d))
+             [poppable {:data [:img {:src src}]
+                        :children link}]
+             link))
+         ]))]])
 
 (defn drugs []
   [:div
@@ -146,19 +147,17 @@
   (let [x (s->ar (if (empty? concentration_range) temperature_range concentration_range))
         y (s->ar fold_change)
         ]
-    (map (fn [x y] {:rep rep :pid uniprot :prot prot-name :drug drugname :x x :y y}) x y)))
+    (map (fn [x y] {:rep rep :pid uniprot :prot prot-name :drug drugname :x (js/Math.log10 x) :y y}) x y)))
 
-(defn make-curve [{:keys [rep drugname uniprot prot-name pEC50 slope min_x max_x]}]
-  (let [step 0.5]
-    (for [x (range min_x (+ max_x step) step)]
-      {:rep rep :pid uniprot :prot prot-name :drug drugname :x x :y (/ 1 (+ 1 (js/Math.exp (* (- (- pEC50) x) slope))))})))
+(defn make-curve [{:keys [rep temperature_range concentration_range drugname uniprot prot-name pEC50 slope min_x max_x]}]
+  (let [step 0.5
+        xrange (s->ar (if (empty? concentration_range) temperature_range concentration_range))
+        ]
+    (for [x xrange]
+      {:rep rep :pid uniprot :prot prot-name :drug drugname :x (js/Math.log10 x) :y (+ 1 (/ -1 (+ 1 (js/Math.pow (/ x pEC50) (- slope)))))})))
 
-(defn make-volcdata [{:keys [rep drugname uniprot prot-name prot-id fold_change pvalue]}]
-  (let [fc (s->ar fold_change)
-        fc (if (< (count fc) 3)
-             [(fc)]
-             [(apply min fc) (apply max fc)])]
-    (map (fn [fc] {:rep rep :uniprot uniprot :prot-name prot-name :prot-id prot-id :drug drugname :PValue pvalue :logFC fc}) fc)))
+(defn make-volcdata [{:keys [rep drugname uniprot prot-name prot-id logfc pvalue]}]
+  {:rep rep :uniprot uniprot :prot-name prot-name :prot-id prot-id :drug drugname :PValue pvalue :logFC logfc})
 
 (defn plotprot [[uniprot m]]
   (let [p (flatten (map make-points m))
@@ -184,7 +183,7 @@
                                                              ::route/report {:type "Protein"
                                                                             :id pid}])))))}]))
 (defn plotheat [r]
-  (let [r (map (fn [x] (assoc x :logFC (last (s->ar (:fold_change x))))) r)]
+  (let [r (map (fn [x] (assoc x :logFC (:logfc x))) r)]
     [vega-lite (vegaspec-heat r)]))
 
 (defn heatmap []
